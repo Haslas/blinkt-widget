@@ -1,62 +1,30 @@
 import requests
-import avahi
+import status_file_handling_funcs as sfhf
 
 from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
 
 
-def get_device_list():
-    '''Returns a list of ips of devices'''
-    device_list = []
-    avahi.run()
-    blinkt_devices = avahi.read()
-    print(blinkt_devices)
-    for item in blinkt_devices:
-        device_list.append(item)
-    print(device_list)
-    return device_list
-
-
-def get_device_statuses():
-    errorTuple = (
-        SyntaxError,
-        AttributeError,
-        TypeError,
-        requests.exceptions.Timeout,
-        requests.exceptions.ConnectTimeout,
-        requests.exceptions.ConnectionError,
-        RuntimeError)
-    statuses = []
-    device_list = get_device_list()
-    for device in device_list:
-        # This line would make http://localhost:5000
-        # into http://localhost:5000/api
-        device = device.strip()
-        print('http://' + device + '/api')
-        try:
-            response = requests.get('http://' + device + '/api', timeout=1)
-            print(response)
-            # builds a dict list of statuses and the type of device
-            statuses.append(response.json())
-        except errorTuple, error:
-            print error
-            statuses.append({'missing': device})
-    return statuses
-
-
 @app.route('/', methods=['GET'])
 def main():
-    return render_template('dashboard.html', statuses=get_device_statuses())
+    return render_template('dashboard.html', statuses=sfhf.load_statuses())
 
 
 @app.route('/', methods=['POST'])
 def change():
+    errorTuple = (
+                 requests.exceptions.Timeout,
+                 requests.exceptions.ConnectTimeout,
+                 requests.exceptions.ConnectionError)
     the_new_status = request.form['new_status']
     endpoint = request.form['endpoint']
-    # changes the status of the relevant device by calling api.refresh()
-    requests.post(endpoint, data={'new_status': the_new_status})
-    # status.change_status(the_new_status)
+        # changes the status of the relevant device by calling api.refresh()
+    try:
+        requests.post(endpoint, data={'new_status': the_new_status}, timeout=1)
+        # status.change_status(the_new_status)
+    except:
+        pass
     return redirect(url_for('main'))
 
 

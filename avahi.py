@@ -55,8 +55,7 @@ def write(devices):
     for device in devices:
         file.write(device + '\n')
     file.close()
-    print
-    "Written"
+    # print "Written"
 
 
 def read():
@@ -70,14 +69,11 @@ def read():
 
 
 def run():
-    if __name__ == "__main__":
-        matches = browse()
+    matches = browse()
+    # print "Matches..."
+    for match in matches:
+        print match
+    write(matches)
 
-        print
-        "Matches..."
-        for match in matches:
-            print match
-        write(matches)
-
-
-run()
+if __name__ == "__main__":
+    run()
