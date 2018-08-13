@@ -1,0 +1,2 @@
+@reboot /home/pi/blinkt-widget/api.py
+
